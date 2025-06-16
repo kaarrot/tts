@@ -15,6 +15,14 @@ NOTE: see below to see detailed steps to set up all dependencies
 
 # Build dependencies - pdf parser (PDF-Writer)
 
+
+## CMake
+
+cmake -S . -B __build_64 -G "Visual Studio 17 2022" -A x64
+cmake --build __build_64 --config RelWithDebInfo
+
+## Old 5.14 setup 
+
 Update paths to NDK, Android and Qt in:
 - build_pdf_hummus_parser.sh
 - build_android_package.sh

@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "MSVC",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${command:cmake.buildDirectory}/${command:cmake.buildType}",
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "${command:cmake.buildDirectory}/deps/dist/bin;${env:PATH}"
+                },
+            ]
+        },
+        {
+            "name": "Gdb Linux",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${command:cmake.buildDirectory}",
+            "environment": [],
+        },
+        ]
+}
