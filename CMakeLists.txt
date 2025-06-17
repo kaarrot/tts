@@ -23,14 +23,14 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 include(dependency_utils)
 
-# checked_find_package(Qt REQUIRED)
+checked_find_package(Qt6 REQUIRED)
 
 # Set Qt6 paths
-set(Qt6_ROOT "C:/Users/kuba/PRJ/tts/__build_vscode_RelWithDebInfo_MSVC/deps/dist")
-set(CMAKE_PREFIX_PATH 
-    "${Qt6_ROOT}"
-    ${CMAKE_PREFIX_PATH}
-)
+# set(Qt6_ROOT "C:/Users/kuba/PRJ/tts/__build_vscode_RelWithDebInfo_MSVC/deps/dist")
+# set(CMAKE_PREFIX_PATH 
+#     "${Qt6_ROOT}"
+#     ${CMAKE_PREFIX_PATH}
+# )
 
 # Enable Qt MOC, RCC, and UIC
 set(CMAKE_AUTOMOC ON)

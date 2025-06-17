@@ -295,11 +295,8 @@ macro (checked_find_package pkgname)
         ${ARGN})
 
 
-
     string (TOLOWER ${pkgname} pkgname_lower)
     string (TOUPPER ${pkgname} pkgname_upper)
-
-    message(STATUS "QQQQQ ${pkgname_lower}")
 
     set (_pkg_VERBOSE ${VERBOSE})
     if (_pkg_DEBUG)
@@ -315,8 +312,6 @@ macro (checked_find_package pkgname)
     if ("${pkgname}" IN_LIST ${PROJECT_NAME}_OPTIONAL_DEPS OR "ALL" IN_LIST ${PROJECT_NAME}_OPTIONAL_DEPS)
         set (_pkg_REQUIRED 0)
     endif ()
-
-    message(STATUS "QQQQQ ${${PROJECT_NAME}_REQUIRED_DEPS}")
 
     # string (TOLOWER "${_pkg_BUILD_LOCAL}" _pkg_BUILD_LOCAL)
     if ("${pkgname}" IN_LIST ${PROJECT_NAME}_BUILD_LOCAL_DEPS
@@ -336,9 +331,6 @@ macro (checked_find_package pkgname)
     set (_quietskip false)
     check_is_enabled (${pkgname} _enable)
     set (_disablereason "")
-
-    message(STATUS "QQQQQQ ${_pkg_DEPS}")
-
 
     foreach (_dep ${_pkg_DEPS})
         if (_enable AND NOT ${_dep}_FOUND)
@@ -374,8 +366,6 @@ macro (checked_find_package pkgname)
     #
     set (${pkgname}_FOUND FALSE)
     set (${pkgname}_LOCAL_BUILD FALSE)
-
-    message(STATUS "iiiiiiiiiiiiiiii ${_enable} ${_pkg_REQUIRED}")
 
     if (_enable OR _pkg_REQUIRED)
         # Unless instructed not to, try to find the package externally
@@ -426,12 +416,9 @@ macro (checked_find_package pkgname)
         # If we haven't found the package yet and are allowed to build a local
         # version, and a build_<pkgname>.cmake exists, include it to build the
         # package locally.
-        message(STATUS "uuuu ${pkgname}_FOUND ${${pkgname}_FOUND} ${${pkgname}_local_build_script} ")
         if (NOT ${pkgname}_FOUND AND NOT ${pkgname_upper}_FOUND
             # AND (_pkg_BUILD_LOCAL STREQUAL "always" OR _pkg_BUILD_LOCAL STREQUAL "missing")
             AND EXISTS "${${pkgname}_local_build_script}")
-
-            message(STATUS "uuuuuuuuuuuuuuuu")
 
             message (STATUS "${ColorMagenta}Building package ${pkgname} ${${pkgname}_VERSION} locally${ColorReset}")
             list(APPEND CMAKE_MESSAGE_INDENT "        ")
@@ -442,12 +429,7 @@ macro (checked_find_package pkgname)
             list (APPEND CFP_LOCALLY_BUILT_DEPS ${pkgname})
             list (REMOVE_ITEM CFP_LOCALLY_BUILDABLE_DEPS_NOTFOUND ${pkgname})
 
-
         endif()
-
-
-
-        set(${pkgname}_REFIND TRUE)  ############## REMOVE once done debugging
 
         # If the local build instrctions set <pkgname>_REFIND, then try a find
         # again to pick up the local one, at which point we can proceed as if
@@ -459,13 +441,10 @@ macro (checked_find_package pkgname)
         if (${pkgname}_REFIND)
             message (STATUS "Refinding ${pkgname} with ${pkgname}_ROOT=${${pkgname}_ROOT}")
 
-
             # find_package (${pkgname} ${${pkgname}_REFIND_VERSION} REQUIRED ${_pkg_UNPARSED_ARGUMENTS} ${${pkgname}_REFIND_ARGS})
             
-            # TODO kuba removed version as cmake complain it cant finf specifc one - not sure why . Perhaps we omit it in configuration in check_fine package 
+            # TODO Removed version for now 
             find_package (${pkgname} REQUIRED ${_pkg_UNPARSED_ARGUMENTS} ${${pkgname}_REFIND_ARGS})
-
-            message(STATUS "REFINDING??????")
 
             unset (${pkgname}_REFIND)
         endif()
@@ -624,101 +603,6 @@ macro (build_dependency_with_cmake pkgname)
 endmacro ()
 
 
-
-macro (build_dependency_from_archive pkgname)
-    cmake_parse_arguments(_pkg   # prefix
-        # noValueKeywords:
-        "NOINSTALL"
-        # singleValueKeywords:
-        "GIT_REPOSITORY;GIT_TAG;VERSION"
-        # multiValueKeywords:
-        "CMAKE_ARGS"
-        # argsToParse:
-        ${ARGN})
-
-    message (STATUS "Building local ${pkgname} ${_pkg_VERSION} from ${_pkg_GIT_REPOSITORY}")
-
-    set (${pkgname}_ARCHIVE "${${PROJECT_NAME}_LOCAL_DEPS_ROOT}/${pkgname}.zip")
-    set (${pkgname}_LOCAL_SOURCE_DIR "${${PROJECT_NAME}_LOCAL_DEPS_ROOT}/${pkgname}")
-    set (${pkgname}_LOCAL_BUILD_DIR "${${PROJECT_NAME}_LOCAL_DEPS_ROOT}/${pkgname}-build")
-    set (${pkgname}_LOCAL_INSTALL_DIR "${${PROJECT_NAME}_LOCAL_DEPS_ROOT}/dist")
-    message (STATUS "Downloading local ${_pkg_GIT_REPOSITORY}")
-
-    set (_pkg_quiet OUTPUT_QUIET)
-
-    message(STATUS "Downloading local${${pkgname}_LOCAL_SOURCE_DIR}")
-
-    if(NOT EXISTS ${${pkgname}_ARCHIVE})
-        file(DOWNLOAD ${_pkg_GIT_REPOSITORY} ${${pkgname}_ARCHIVE} SHOW_PROGRESS STATUS status LOG log)
-        if(NOT status EQUAL 0)
-            message(FATAL_ERROR "Failed to download ${_pkg_GIT_REPOSITORY}: ${log}")
-        endif()
-    endif()
-
-    message(STATUS ${${pkgname}_LOCAL_SOURCE_DIR})
-
-    if(NOT IS_DIRECTORY ${${pkgname}_LOCAL_SOURCE_DIR})
-        # file(MAKE_DIRECTORY ${${pkgname}_LOCAL_SOURCE_DIR})
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} -E tar -xzf ${${pkgname}_ARCHIVE}
-            WORKING_DIRECTORY ${${PROJECT_NAME}_LOCAL_DEPS_ROOT}
-            # ${${pkgname}_LOCAL_SOURCE_DIR}
-            ${_pkg_quiet}
-        )
-
-        # TODO: this only works as we have one folder and one file in directory
-        file(GLOB extracted_dirs "${${PROJECT_NAME}_LOCAL_DEPS_ROOT}/*")
-        list(FILTER extracted_dirs EXCLUDE REGEX ".*\\.zip$")
-        message(STATUS "Rename: ${extracted_dirs} to ${${pkgname}_LOCAL_SOURCE_DIR}") # Qt
-
-        file(RENAME ${extracted_dirs} ${${pkgname}_LOCAL_SOURCE_DIR})
-
-        if(NOT IS_DIRECTORY ${${pkgname}_LOCAL_SOURCE_DIR})
-            message(FATAL_ERROR "Failed to extract ${${pkgname}_ARCHIVE}")
-        endif()
-    endif()
-
-    # Copy powershell environment setup and configuration script. Required to setup x64 environment
-    execute_process(
-            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/configure_msvc_x64.ps1 ${${pkgname}_LOCAL_SOURCE_DIR}
-            ${_pkg_quiet}
-    )
-
-
-    message(STATUS "Future reconfigure will not remove the deps folder - this needs to be removed manually")
-    message(STATUS "In order to rerun configuration step remove CMakeCache.txt and configure.summary")
-    
-    message(STATUS "${pkgname}_LOCAL_INSTALL_DI ${${pkgname}_LOCAL_INSTALL_DIR}")
-
-    if(NOT EXISTS "${${pkgname}_LOCAL_SOURCE_DIR}/CMakeCache.txt")
-        message(STATUS "Configure using configure_msvc_x64.ps1 ")
-
-        execute_process(
-            COMMAND powershell .\\configure_msvc_x64.ps1 "-InstallPrefix ${${pkgname}_LOCAL_INSTALL_DIR}"
-            WORKING_DIRECTORY ${${pkgname}_LOCAL_SOURCE_DIR}
-        )
-    endif()
-
-    # Run Qt in-source build
-    execute_process (COMMAND
-        ${CMAKE_COMMAND} --build ${${pkgname}_LOCAL_SOURCE_DIR} --parallel --target install
-        WORKING_DIRECTORY ${${pkgname}_LOCAL_SOURCE_DIR}
-    )
-
-
-    # Make sure to find we find installed config file
-    execute_process(
-            COMMAND ${CMAKE_COMMAND} -E copy ${${pkgname}_LOCAL_INSTALL_DIR}/lib/cmake/Qt6/Qt6Config.cmake ${${pkgname}_LOCAL_INSTALL_DIR}/lib/cmake/Qt6/QtConfig.cmake
-            ${_pkg_quiet}
-    )
-
-    message(STATUS "QQQQ ${${pkgname}_LOCAL_INSTALL_DIR}")
-
-    set (${pkgname}_ROOT ${${pkgname}_LOCAL_INSTALL_DIR})
-    list (APPEND CMAKE_PREFIX_PATH ${${pkgname}_LOCAL_INSTALL_DIR}/lib/cmake/Qt6)
-    message(STATUS "SSSSSS ${CMAKE_PREFIX_PATH}")
-
-endmacro ()
 
 # Copy libraries from a locally-built dependency into our own install area.
 # This is useful for dynamic libraries that we need to be part of our own
