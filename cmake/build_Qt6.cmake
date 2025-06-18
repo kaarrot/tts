@@ -88,7 +88,7 @@ macro (build_dependency_from_archive pkgname)
     )
 
     set (${pkgname}_ROOT ${${pkgname}_LOCAL_INSTALL_DIR})
-    set(Qt6_DIR ${pkgname}_ROOT)  # Important - used to find Qt installation
+    set(${pkgname}_DIR ${pkgname}_ROOT)  # Important - Qt6_DIR apparently is used to search for valid Qt installation
     list (APPEND CMAKE_PREFIX_PATH ${${pkgname}_LOCAL_INSTALL_DIR}/lib/cmake/Qt6)
 
 endmacro ()
@@ -96,11 +96,7 @@ endmacro ()
 
 message(STATUS "########## build_dependency_from_archive - Qt ##########")
 
-set_cache (Qt_BUILD_VERSION 6.9.1 "Imath version for local builds")
-set (Imath_GIT_REPOSITORY "https://github.com/AcademySoftwareFoundation/Imath")
-set (Imath_GIT_TAG "v${Imath_BUILD_VERSION}")
-set_cache (Imath_BUILD_SHARED_LIBS ${LOCAL_BUILD_SHARED_LIBS_DEFAULT}
-           DOC "Should a local Imath build, if necessary, build shared libraries" ADVANCED)
+set_cache (Qt_BUILD_VERSION 6.9.1 "Qt version for local builds")
 
 build_dependency_from_archive(Qt6
     # VERSION 6.9.1
@@ -108,7 +104,7 @@ build_dependency_from_archive(Qt6
 )
 
 # Signal to caller that we need to find again at the installed location
-set (Qt_REFIND TRUE)
-set (Qt_REFIND_ARGS CONFIG)
-set (Qt_REFIND_VERSION ${Qt_BUILD_VERSION})
+set (Qt6_REFIND TRUE)
+set (Qt6_REFIND_ARGS CONFIG)
+set (Qt6_REFIND_VERSION ${Qt_BUILD_VERSION})
 

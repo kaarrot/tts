@@ -439,12 +439,8 @@ macro (checked_find_package pkgname)
         #                               to specifically find.
         #   ${pkgname}_REFIND_ARGS    : additional arguments to pass to find_package
         if (${pkgname}_REFIND)
-            message (STATUS "Refinding ${pkgname} with ${pkgname}_ROOT=${${pkgname}_ROOT}")
-
-            # find_package (${pkgname} ${${pkgname}_REFIND_VERSION} REQUIRED ${_pkg_UNPARSED_ARGUMENTS} ${${pkgname}_REFIND_ARGS})
-            
-            # TODO Removed version for now 
-            find_package (${pkgname} REQUIRED ${_pkg_UNPARSED_ARGUMENTS} ${${pkgname}_REFIND_ARGS})
+            message(STATUS "Refinding with --- ${pkgname}_REFIND --- ${${pkgname}_REFIND_VERSION}  --- ${_pkg_UNPARSED_ARGUMENTS} --- ${${pkgname}_REFIND_ARGS}")
+            find_package (${pkgname} ${${pkgname}_REFIND_VERSION} REQUIRED ${_pkg_UNPARSED_ARGUMENTS} ${${pkgname}_REFIND_ARGS})
 
             unset (${pkgname}_REFIND)
         endif()
