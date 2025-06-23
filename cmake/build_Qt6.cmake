@@ -99,7 +99,7 @@ macro (build_dependency_from_archive pkgname)
 
       if(NOT EXISTS "${${pkgname}_LOCAL_SOURCE_DIR}/CMakeCache.txt")
         execute_process(
-          COMMAND ${CMAKE_COMMAND} ${${pkgname}_LOCAL_SOURCE_DIR} -DCMAKE_BUILD_TYPE=Release -DBUILD_qtwebengine=OFF -DBUILD_qtspeech=OFF -DCMAKE_INSTALL_PREFIX=${${pkgname}_LOCAL_INSTALL_DIR}
+          COMMAND ${CMAKE_COMMAND} ${${pkgname}_LOCAL_SOURCE_DIR} -DCMAKE_BUILD_TYPE=Release -DBUILD_qtdeclarative=ON -DBUILD_qtmultimedia=ON -DBUILD_qtwebengine=OFF -DBUILD_qtspeech=OFF -DBUILD_qt3d=OFF -DBUILD_qtimageformats=OFF -DBUILD_qttools=OFF -DBUILD_qtdoc=OFF -DBUILD_qttranslations=OFF -DQT_BUILD_EXAMPLES=OFF  -DQT_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${${pkgname}_LOCAL_INSTALL_DIR}
           WORKING_DIRECTORY ${${pkgname}_LOCAL_SOURCE_DIR}
           )
        endif()
