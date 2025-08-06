@@ -38,9 +38,8 @@ public:
 Q_INVOKABLE bool stop() {
     qDebug()<< "tts_stop";
     int success = CPRCEN_engine_channel_reset(eng, chan);
-    if (player) {
-        player->stop();
-    }
+    player->stop();
+
     return true;
 }
 

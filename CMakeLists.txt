@@ -80,7 +80,7 @@ message(STATUS "Qt6Qml found: ${Qt6Qml_FOUND}")
 message(STATUS "Qt6Quick found: ${Qt6Quick_FOUND}")
 message(STATUS "Qt6Multimedia found: ${Qt6Multimedia_FOUND}")
 
-# Link Qt libraries and CereProc TTS libraries
+# Link Qt libraries
 target_link_libraries(TTSApp PRIVATE
     Qt6::Core
     Qt6::Gui

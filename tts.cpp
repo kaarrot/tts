@@ -20,16 +20,8 @@ void channel_callback(CPRC_abuf * abuf, void * userdata){
     buffer->open(QIODevice::ReadWrite);
 
     // Start player and holds before next callback is triggered
-    // The event loop is released with the QAudioSink::stateChanged signal
-    QIODevice* device = player->start();
-    if (device) {
-        device->write(bytes);
-        qDebug() << "Wrote" << bytes.size() << "bytes to audio device";
-    } else {
-        qDebug() << "Failed to get audio device!";
-        return;
-    }
-    
+    // The event loop is release with the QAudioOutput::stateChanged signal
+    player->start(buffer);
     QEventLoop * last_even_loop = _tts->event_loop_list[_tts->event_loop_list.size()-1].get();
     last_even_loop->exec();
 }
