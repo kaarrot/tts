@@ -2,7 +2,7 @@ import QtQuick 2.9
 import QtQuick.Controls 2.2
 import QtMultimedia 5.0
 
-// import custom.tts 1.0  TODO
+import custom.tts 1.0
 import QtQuick.Window 2.10
 
 ApplicationWindow {
@@ -12,10 +12,9 @@ ApplicationWindow {
     height: 480
     title: qsTr("Tabs")
 
-    // TODO
-//    TTS {
-//        id: tts
-//    }
+    TTS {
+        id: tts
+    }
 
     Flickable
     {

@@ -18,6 +18,19 @@ NOTE: see below to see detailed steps to set up all dependencies
 
 ## CMake
 
+Clone dependenices
+```
+git submodule update --init
+export ROOT=/opt/PRJ/tts/
+cd $ROOT/pdf_hummus_parser
+mkdir __build && cd __build
+```
+- when building only for linux
+
+```
+cmake $ROOT/pdf_hummus_parser -DCMAKE_INSTALL_PREFIX=$ROOT/__install_linux
+```
+
 ### Build and cleanup dependencies
 - To download again broken archive: remove `deps/Qt6.zip` `deps/Qt6`
 - To reconfigure Qt build - remove `deps/CMakeCache` and `deps/configure.summary`

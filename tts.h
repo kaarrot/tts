@@ -8,7 +8,7 @@
 #include <QBuffer>
 #include <QDataStream>
 #include <QAudioFormat>
-#include <QAudioOutput>
+#include <QAudioSink>
 #include <QFile>
 #include <QDir>
 #include <QStandardPaths>
@@ -17,8 +17,8 @@
 
 #include <cerevoice_eng.h>
 
-// #include "pdf_text_extract/text.h"
-#include <text.h>
+#include "pdf_text_extract/text.h"
+// #include <text.h>
 
 class tts : public QObject{
     Q_OBJECT
@@ -38,8 +38,9 @@ public:
 Q_INVOKABLE bool stop() {
     qDebug()<< "tts_stop";
     int success = CPRCEN_engine_channel_reset(eng, chan);
-    player->stop();
-
+    if (player) {
+        player->stop();
+    }
     return true;
 }
 
@@ -83,7 +84,7 @@ private:
     CPRCEN_channel_handle chan;
 
 public:
-    std::unique_ptr<QAudioOutput> player;
+    std::unique_ptr<QAudioSink> player;
     std::vector<std::unique_ptr<QEventLoop>> event_loop_list; // local loop to block the callback
     bool continue_play=true;
 };

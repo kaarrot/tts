@@ -1,12 +1,12 @@
 #include "tts.h"
 
 #include <QDataStream>
-#include <QAudioOutput>
+#include <QAudioSink>
 
 void channel_callback(CPRC_abuf * abuf, void * userdata){
 
     tts * _tts = (tts *) userdata;
-    QAudioOutput * player = _tts->player.get();
+    QAudioSink * player = _tts->player.get();
 
     // length of the adio in the buffer
     int len = CPRC_abuf_wav_sz(abuf) * 2;
@@ -29,23 +29,20 @@ void channel_callback(CPRC_abuf * abuf, void * userdata){
 Q_INVOKABLE bool tts::play(const QString &msg, int rateValue) {
     chan = CPRCEN_engine_open_default_channel(eng);
     int freq = atoi(CPRCEN_channel_get_voice_info(eng, chan, "SAMPLE_RATE"));
-    /// Seting audio parms
+    /// Setting audio params for Qt6
     QAudioFormat fmt = QAudioFormat();
-    fmt.setCodec("audio/pcm");
     fmt.setSampleRate(freq);  // 48000
-    fmt.setSampleSize(16);
+    fmt.setSampleFormat(QAudioFormat::Int16);
     fmt.setChannelCount(1);
-    fmt.setSampleType(QAudioFormat::SignedInt);
-    fmt.setByteOrder(QAudioFormat::LittleEndian);
-    player = std::unique_ptr<QAudioOutput>(new QAudioOutput(fmt, this));
+    player = std::unique_ptr<QAudioSink>(new QAudioSink(fmt, this));
 
     event_loop_list.emplace_back(std::unique_ptr<QEventLoop>(new QEventLoop(this)));
     QEventLoop * last_even_loop = event_loop_list[event_loop_list.size()-1].get();
 
     CPRCEN_engine_set_callback(eng, chan, (void *)this, channel_callback);
 
-    // As we resetting playber and callback each time play is pressed - we need to reconect singnals too
-    connect(player.get(), &QAudioOutput::stateChanged, last_even_loop, &QEventLoop::quit );
+    // As we resetting player and callback each time play is pressed - we need to reconnect signals too
+    connect(player.get(), &QAudioSink::stateChanged, last_even_loop, &QEventLoop::quit );
     //connect(player,  &QAudioOutput::notify, this, []( ) { qDebug()<<"debugging state changed";} );
 
     // wrap text prosody tag to control speach rate

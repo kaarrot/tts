@@ -63,11 +63,14 @@ add_executable(TTSApp
 # Add CereProc TTS library includes
 target_include_directories(TTSApp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/__install_linux/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/pdf_text_extract
 )
 
 # Add CereProc TTS library directories
 target_link_directories(TTSApp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/static
+    ${CMAKE_CURRENT_SOURCE_DIR}/__install_linux/lib
 )
 
 message(STATUS "Qt6 found: ${Qt6_FOUND}")
@@ -77,18 +80,30 @@ message(STATUS "Qt6Qml found: ${Qt6Qml_FOUND}")
 message(STATUS "Qt6Quick found: ${Qt6Quick_FOUND}")
 message(STATUS "Qt6Multimedia found: ${Qt6Multimedia_FOUND}")
 
-# Link Qt libraries
+# Link Qt libraries and CereProc TTS libraries
 target_link_libraries(TTSApp PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Qml
     Qt6::Quick
     Qt6::Multimedia
-    # CereProc TTS libraries
+    # CereProc TTS libraries (order matters for static linking)
+    -Wl,--start-group
     cerevoice_pmod
     cerevoice_eng
     cerevoice
     cerehts
+    -Wl,--end-group
+    # PDF libraries (required by text.h)
+    -Wl,--start-group
+    PDFWriter
+    FreeType
+    LibAesgm
+    LibPng
+    LibTiff
+    LibJpeg
+    Zlib
+    -Wl,--end-group
 )
 
 # Copy main.qml to build directory
