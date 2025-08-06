@@ -18,7 +18,7 @@ NOTE: see below to see detailed steps to set up all dependencies
 
 ## CMake
 
-### Build and cleanuip dependencies
+### Build and cleanup dependencies
 - To download again broken archive: remove `deps/Qt6.zip` `deps/Qt6`
 - To reconfigure Qt build - remove `deps/CMakeCache` and `deps/configure.summary`
 - To force refinding - set before `checked_find_package(Qt6 REQUIRED)`: `set(Qt6_REFIND TRUE)`
@@ -80,11 +80,12 @@ unzip android-ndk-r21b-linux-x86_64.zip -d $HOME/Android/
 ### Install Qt (inlcluding Gcc and Android toolchains)
 
 ### Extract proprietary dependencies for this repository
-This shold create/update following directories:
+This should create/update following directories:
 - libs
 - libs_android
 - file_data (with voice data)
 ```
+sudo apt install p7zip-full
 7z x tts_android.7z.001
 ```
 

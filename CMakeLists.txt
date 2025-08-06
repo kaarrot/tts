@@ -49,8 +49,25 @@ find_package(Qt6 REQUIRED COMPONENTS
 # Add executable
 add_executable(TTSApp
     main.cpp
-    # tts.h
-    # tts.cpp
+    tts.h
+    tts.cpp
+)
+
+# TODO
+# if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+
+# TODO
+# if(NOT EXISTS ${CEREVOICE_INCLUDE_DIR})
+
+
+# Add CereProc TTS library includes
+target_include_directories(TTSApp PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/include
+)
+
+# Add CereProc TTS library directories
+target_link_directories(TTSApp PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/static
 )
 
 message(STATUS "Qt6 found: ${Qt6_FOUND}")
@@ -67,6 +84,11 @@ target_link_libraries(TTSApp PRIVATE
     Qt6::Qml
     Qt6::Quick
     Qt6::Multimedia
+    # CereProc TTS libraries
+    cerevoice_pmod
+    cerevoice_eng
+    cerevoice
+    cerehts
 )
 
 # Copy main.qml to build directory
@@ -75,6 +97,20 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_SOURCE_DIR}/main.qml
         ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/main.qml
+)
+
+# Copy TTS data files to build directory
+add_custom_command(
+    TARGET TTSApp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/file_data/license_eng.lic
+        ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/license_eng.lic
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/file_data/tts_eng.voice
+        ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/tts_eng.voice
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/file_data/curious_character.pdf
+        ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/curious_character.pdf
 )
 
 
