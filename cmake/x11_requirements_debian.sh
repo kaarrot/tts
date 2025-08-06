@@ -23,4 +23,5 @@ apt install \
     libxi-dev \
     libxkbcommon-dev \
     libxkbcommon-x11-dev \
-    libxrender-dev
+    libxrender-dev \
+    libasound2-dev libpulse-dev
