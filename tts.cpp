@@ -20,8 +20,16 @@ void channel_callback(CPRC_abuf * abuf, void * userdata){
     buffer->open(QIODevice::ReadWrite);
 
     // Start player and holds before next callback is triggered
-    // The event loop is release with the QAudioOutput::stateChanged signal
-    player->start(buffer);
+    // The event loop is released with the QAudioSink::stateChanged signal
+    QIODevice* device = player->start();
+    if (device) {
+        device->write(bytes);
+        qDebug() << "Wrote" << bytes.size() << "bytes to audio device";
+    } else {
+        qDebug() << "Failed to get audio device!";
+        return;
+    }
+    
     QEventLoop * last_even_loop = _tts->event_loop_list[_tts->event_loop_list.size()-1].get();
     last_even_loop->exec();
 }
@@ -34,6 +42,9 @@ Q_INVOKABLE bool tts::play(const QString &msg, int rateValue) {
     fmt.setSampleRate(freq);  // 48000
     fmt.setSampleFormat(QAudioFormat::Int16);
     fmt.setChannelCount(1);
+    
+    // Use default audio output without device detection
+    qDebug() << "Creating QAudioSink with format:" << fmt;
     player = std::unique_ptr<QAudioSink>(new QAudioSink(fmt, this));
 
     event_loop_list.emplace_back(std::unique_ptr<QEventLoop>(new QEventLoop(this)));
@@ -42,7 +53,12 @@ Q_INVOKABLE bool tts::play(const QString &msg, int rateValue) {
     CPRCEN_engine_set_callback(eng, chan, (void *)this, channel_callback);
 
     // As we resetting player and callback each time play is pressed - we need to reconnect signals too
-    connect(player.get(), &QAudioSink::stateChanged, last_even_loop, &QEventLoop::quit );
+    connect(player.get(), &QAudioSink::stateChanged, this, [this, last_even_loop](QAudio::State state) {
+        qDebug() << "Audio state changed to:" << state;
+        if (state == QAudio::IdleState || state == QAudio::StoppedState) {
+            last_even_loop->quit();
+        }
+    });
     //connect(player,  &QAudioOutput::notify, this, []( ) { qDebug()<<"debugging state changed";} );
 
     // wrap text prosody tag to control speach rate
