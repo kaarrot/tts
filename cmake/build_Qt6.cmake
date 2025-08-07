@@ -97,7 +97,6 @@ macro (build_dependency_from_archive pkgname)
     else()
       MESSAGE(STATUS "Configure Linux build with configure, install to: ${${pkgname}_LOCAL_INSTALL_DIR}")
 
-      MESSAGE(STATUS "If you need to reconfigure run: rm ${${pkgname}_LOCAL_SOURCE_DIR}/CMakeCache.txt")
       if(NOT EXISTS "${${pkgname}_LOCAL_SOURCE_DIR}/CMakeCache.txt")
         execute_process(
                      COMMAND ${CMAKE_COMMAND} ${${pkgname}_LOCAL_SOURCE_DIR} -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_PARALLEL_LEVEL=4 -DBUILD_qtdeclarative=ON -DBUILD_qtmultimedia=ON -DBUILD_qtimageformats=ON -DFEATURE_jpeg=ON -DFEATURE_png=ON -DFEATURE_gif=ON -DFEATURE_ico=ON -DFEATURE_sql=OFF -DFEATURE_concurrent=OFF -DFEATURE_xml=OFF -DFEATURE_printsupport=OFF -DBUILD_qtwebengine=OFF -DBUILD_qtspeech=OFF -DBUILD_qt3d=OFF -DBUILD_qtgraphs=OFF -DBUILD_qtquick3dphysics=OFF -DBUILD_qttools=OFF -DBUILD_qtdoc=OFF -DBUILD_qttranslations=OFF -DBUILD_qtnetworkauth=OFF -DBUILD_qtserialport=OFF -DBUILD_qtserialbus=OFF -DBUILD_qtpositioning=OFF -DBUILD_qtlocation=OFF -DBUILD_qtwebsockets=OFF -DBUILD_qtwebchannel=OFF -DBUILD_qtremoteobjects=OFF -DBUILD_qtscxml=OFF -DBUILD_qtsensors=OFF -DBUILD_qtcharts=OFF -DBUILD_qtdatavis3d=OFF -DBUILD_qtvirtualkeyboard=OFF -DBUILD_qtquick3d=OFF -DQT_BUILD_EXAMPLES=OFF -DQT_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${${pkgname}_LOCAL_INSTALL_DIR}
@@ -123,16 +122,41 @@ endmacro ()
 
 message(STATUS "########## build_dependency_from_archive - Qt ##########")
 
-set_cache (Qt_BUILD_VERSION 6.9.1 "Imath version for local builds")
-set (Imath_GIT_REPOSITORY "https://github.com/AcademySoftwareFoundation/Imath")
-set (Imath_GIT_TAG "v${Imath_BUILD_VERSION}")
-set_cache (Imath_BUILD_SHARED_LIBS ${LOCAL_BUILD_SHARED_LIBS_DEFAULT}
-           DOC "Should a local Imath build, if necessary, build shared libraries" ADVANCED)
+set_cache (Qt_BUILD_VERSION 6.9.1 "Qt version for local builds")
 
 if(MSVC)
   set(archive_url "https://download.qt.io/archive/qt/6.9/6.9.1/single/qt-everywhere-src-6.9.1.zip")
 else()
   set(archive_url "https://download.qt.io/archive/qt/6.9/6.9.1/single/qt-everywhere-src-6.9.1.tar.xz")
+endif()
+
+# Check for audio development libraries early (for Qt6 multimedia backends)
+message(STATUS "Checking for audio development libraries...")
+
+# Check for ALSA development files
+find_path(ALSA_INCLUDE_DIR alsa/asoundlib.h)
+find_library(ALSA_LIBRARY asound)
+if(ALSA_INCLUDE_DIR AND ALSA_LIBRARY)
+    message(STATUS "✓ ALSA development files found")
+    set(HAVE_ALSA TRUE)
+else()
+    message(WARNING "✗ ALSA development files not found. Install with: sudo apt install libasound2-dev")
+    set(HAVE_ALSA FALSE)
+endif()
+
+# Check for PulseAudio development files
+find_path(PULSE_INCLUDE_DIR pulse/pulseaudio.h)
+find_library(PULSE_LIBRARY pulse)
+if(PULSE_INCLUDE_DIR AND PULSE_LIBRARY)
+    message(STATUS "✓ PulseAudio development files found")
+    set(HAVE_PULSE TRUE)
+else()
+    message(WARNING "✗ PulseAudio development files not found. Install with: sudo apt install libpulse-dev")
+    set(HAVE_PULSE FALSE)
+endif()
+
+if(NOT HAVE_ALSA AND NOT HAVE_PULSE)
+    message(FATAL_ERROR "No audio backend development libraries found! Qt6 multimedia will not work properly. Please install at least one of: libasound2-dev or libpulse-dev")
 endif()
 
 build_dependency_from_archive(Qt6
