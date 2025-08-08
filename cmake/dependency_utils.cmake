@@ -561,6 +561,7 @@ macro (build_dependency_with_cmake pkgname)
                                 )
     endif ()
 
+
     execute_process (COMMAND
         ${CMAKE_COMMAND}
             # Put things in our special local build areas
@@ -568,7 +569,7 @@ macro (build_dependency_with_cmake pkgname)
                 -B ${${pkgname}_LOCAL_BUILD_DIR}
                 -DCMAKE_INSTALL_PREFIX=${${pkgname}_LOCAL_INSTALL_DIR}
             # Same build type as us
-                -DCMAKE_BUILD_TYPE=${${PROJECT_NAME}_DEPENDENCY_BUILD_TYPE}
+                -DCMAKE_BUILD_TYPE=Release
             # Shhhh
                 -DCMAKE_MESSAGE_INDENT="        "
                 -DCMAKE_COMPILE_WARNING_AS_ERROR=OFF
@@ -581,7 +582,7 @@ macro (build_dependency_with_cmake pkgname)
     # Build the package
     execute_process (COMMAND ${CMAKE_COMMAND}
                         --build ${${pkgname}_LOCAL_BUILD_DIR}
-                        --config ${${PROJECT_NAME}_DEPENDENCY_BUILD_TYPE}
+                        --config Release
                      ${pkg_quiet}
                     )
 
@@ -589,7 +590,7 @@ macro (build_dependency_with_cmake pkgname)
     if (NOT _pkg_NOINSTALL)
         execute_process (COMMAND ${CMAKE_COMMAND}
                             --build ${${pkgname}_LOCAL_BUILD_DIR}
-                            --config ${${PROJECT_NAME}_DEPENDENCY_BUILD_TYPE}
+                            --config Release
                             --target install
                          ${pkg_quiet}
                         )

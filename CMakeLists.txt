@@ -20,7 +20,11 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/O2 /DNDEBUG")
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH 
+    "${CMAKE_SOURCE_DIR}/cmake"
+    "${CMAKE_SOURCE_DIR}/cmake/modules"
+)
+
 include(dependency_utils)
 
 checked_find_package(Qt6 REQUIRED)
@@ -46,11 +50,18 @@ find_package(Qt6 REQUIRED COMPONENTS
     Multimedia
 )
 
+checked_find_package(PDFWriter REQUIRED)
+checked_find_package(pdf)  # Just download to access text.h
+
+
 # Add executable
 add_executable(TTSApp
     main.cpp
     tts.h
     tts.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/deps/pdf/src/text_visitor.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/deps/pdf/src/resources_visitor.cpp
+   
 )
 
 # TODO
@@ -60,17 +71,17 @@ add_executable(TTSApp
 # if(NOT EXISTS ${CEREVOICE_INCLUDE_DIR})
 
 
-# Add CereProc TTS library includes
+message(STATUS "pdf include dir:${CMAKE_CURRENT_BINARY_DIR}/deps/pdf/src"
+)
 target_include_directories(TTSApp PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/__install_linux/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/pdf_text_extract
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/include  # cerevoice
+    ${CMAKE_CURRENT_BINARY_DIR}/deps/pdf/src  # text.h
 )
 
 # Add CereProc TTS library directories
 target_link_directories(TTSApp PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/static
-    ${CMAKE_CURRENT_SOURCE_DIR}/__install_linux/lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/static  # cerevoice
+    ${CMAKE_CURRENT_BINARY_DIR}/deps/dist/lib # PDFWriter
 )
 
 message(STATUS "Qt6 found: ${Qt6_FOUND}")

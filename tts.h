@@ -17,8 +17,10 @@
 
 #include <cerevoice_eng.h>
 
-#include "pdf_text_extract/text.h"
-// #include <text.h>
+// #include "pdf/src/text.h"
+
+#include "text.h"
+#include "resources_visitor.h"
 
 class tts : public QObject{
     Q_OBJECT
