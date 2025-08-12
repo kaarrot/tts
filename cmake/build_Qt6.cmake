@@ -29,8 +29,13 @@ macro (build_dependency_from_archive pkgname)
         set(archive_ext "tar.xz")
         set(unzip_flags "-xf")
         set(archive_extension_regex ".*\\.tar\\.xz$")
-        set(NPROC 4)
-    endif()
+
+        execute_process(
+          COMMAND nproc
+          OUTPUT_VARIABLE NPROC
+          OUTPUT_STRIP_TRAILING_WHITESPACE
+          )
+      endif()
 
     
     set (${pkgname}_ARCHIVE "${${PROJECT_NAME}_LOCAL_DEPS_ROOT}/${pkgname}.${archive_ext}")
@@ -99,11 +104,10 @@ macro (build_dependency_from_archive pkgname)
 
       if(NOT EXISTS "${${pkgname}_LOCAL_SOURCE_DIR}/CMakeCache.txt")
         execute_process(
-                     COMMAND ${CMAKE_COMMAND} ${${pkgname}_LOCAL_SOURCE_DIR} -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_PARALLEL_LEVEL=4 -DBUILD_qtdeclarative=ON -DBUILD_qtmultimedia=ON -DBUILD_qtimageformats=ON -DFEATURE_jpeg=ON -DFEATURE_png=ON -DFEATURE_gif=ON -DFEATURE_ico=ON -DFEATURE_sql=OFF -DFEATURE_concurrent=OFF -DFEATURE_xml=OFF -DFEATURE_printsupport=OFF -DBUILD_qtwebengine=OFF -DBUILD_qtspeech=OFF -DBUILD_qt3d=OFF -DBUILD_qtgraphs=OFF -DBUILD_qtquick3dphysics=OFF -DBUILD_qttools=OFF -DBUILD_qtdoc=OFF -DBUILD_qttranslations=OFF -DBUILD_qtnetworkauth=OFF -DBUILD_qtserialport=OFF -DBUILD_qtserialbus=OFF -DBUILD_qtpositioning=OFF -DBUILD_qtlocation=OFF -DBUILD_qtwebsockets=OFF -DBUILD_qtwebchannel=OFF -DBUILD_qtremoteobjects=OFF -DBUILD_qtscxml=OFF -DBUILD_qtsensors=OFF -DBUILD_qtcharts=OFF -DBUILD_qtdatavis3d=OFF -DBUILD_qtvirtualkeyboard=OFF -DBUILD_qtquick3d=OFF -DQT_BUILD_EXAMPLES=OFF -DQT_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${${pkgname}_LOCAL_INSTALL_DIR}
+                     COMMAND ${CMAKE_COMMAND} ${${pkgname}_LOCAL_SOURCE_DIR} -DCMAKE_BUILD_TYPE=Release -DBUILD_qtdeclarative=ON -DBUILD_qtmultimedia=ON -DBUILD_qtimageformats=ON -DFEATURE_jpeg=ON -DFEATURE_png=ON -DFEATURE_gif=ON -DFEATURE_ico=ON -DFEATURE_sql=OFF -DFEATURE_concurrent=ON -DFEATURE_xml=OFF -DFEATURE_printsupport=OFF -DBUILD_qtwebengine=OFF -DBUILD_qtspeech=OFF -DBUILD_qt3d=OFF -DBUILD_qtgraphs=OFF -DBUILD_qtquick3dphysics=OFF -DBUILD_qttools=OFF -DBUILD_qtdoc=OFF -DBUILD_qttranslations=OFF -DBUILD_qtnetworkauth=OFF -DBUILD_qtserialport=OFF -DBUILD_qtserialbus=OFF -DBUILD_qtpositioning=OFF -DBUILD_qtlocation=OFF -DBUILD_qtwebsockets=OFF -DBUILD_qtwebchannel=OFF -DBUILD_qtremoteobjects=OFF -DBUILD_qtscxml=OFF -DBUILD_qtsensors=OFF -DBUILD_qtcharts=OFF -DBUILD_qtdatavis3d=OFF -DBUILD_qtvirtualkeyboard=OFF -DBUILD_qtquick3d=OFF -DQT_BUILD_EXAMPLES=OFF -DQT_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=${${pkgname}_LOCAL_INSTALL_DIR}
           WORKING_DIRECTORY ${${pkgname}_LOCAL_SOURCE_DIR}
           )
        endif()
-
     endif()
 
     message(STATUS "Run Qt insource build")
@@ -111,7 +115,16 @@ macro (build_dependency_from_archive pkgname)
     execute_process (COMMAND
         ${CMAKE_COMMAND} --build ${${pkgname}_LOCAL_SOURCE_DIR} --parallel ${NPROC} --target install
         WORKING_DIRECTORY ${${pkgname}_LOCAL_SOURCE_DIR}
+        RESULT_VARIABLE build_result
+        ERROR_VARIABLE build_error
     )
+    
+    # Check if build was successful
+    if(NOT build_result EQUAL 0)
+        message(FATAL_ERROR "Qt6 build failed with return code: ${build_result}Error: ${build_error}")
+    endif()
+    
+    message(STATUS "Qt6 build completed successfully")
 
     set (${pkgname}_ROOT ${${pkgname}_LOCAL_INSTALL_DIR})
     set(Qt6_DIR ${pkgname}_ROOT)  # Important - used to find Qt installation
@@ -159,12 +172,15 @@ if(NOT HAVE_ALSA AND NOT HAVE_PULSE)
     message(FATAL_ERROR "No audio backend development libraries found! Qt6 multimedia will not work properly. Please install at least one of: libasound2-dev or libpulse-dev")
 endif()
 
+# Build Qt6 and check for success
 build_dependency_from_archive(Qt6
     # VERSION 6.9.1
     URL_PATH ${archive_url}
 )
 
-# Signal to caller that we need to find again at the installed location
+# Only set refind flags if build was successful
+# (The macro will call FATAL_ERROR if build fails, so we only reach here on success)
+message(STATUS "Qt6 build successful - setting up for refind")
 set (Qt6_REFIND TRUE)
 set (Qt6_REFIND_ARGS CONFIG)
 set (Qt6_REFIND_VERSION ${Qt_BUILD_VERSION})
